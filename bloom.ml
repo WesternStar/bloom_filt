@@ -107,7 +107,7 @@ let write bf filename =
 ;;
 
 
-let create   ?filename ?prob ?elements () =
+let create   ?filename ?prob ?elements ()  =
   let bf = match filename,prob,elements with
     | Some filename,None,None -> read filename 
     | None,Some prob , Some elements -> create_bloom_filter prob elements 
