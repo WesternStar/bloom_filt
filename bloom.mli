@@ -1,7 +1,8 @@
 
-type ('a) t
+type ('a) bloom_filter
 
-val create : unit -> ('a) t
-val add :'a t -> key:'a -> unit
-val find : 'a t -> 'a -> bool
-val reset :unit -> ('a) t  
+val create : ?filename:bytes -> ?prob:float -> ?elements:float -> unit -> 'a bloom_filter
+val add : 'a bloom_filter -> 'a -> unit 
+val find : 'a bloom_filter -> 'a -> bool
+val read : bytes -> 'a 
+val write : 'a -> bytes -> unit 

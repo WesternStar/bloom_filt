@@ -1,3 +1,4 @@
+
 let get_bit x i =
   let mask = 1 lsl i in
   x land mask != 0;;
@@ -11,16 +12,16 @@ let get_int_array a i =
 
 let set_int_array a i x =
   a.(i mod Array.length a ) <- x;;
-
+(* We are assuming 64bit *)
 let get_bit_array  a i =
-  let index= i lsr 5 in
+  let index= i lsr 6 in
   let x = get_int_array a index in
-  get_bit x (i mod 32);;
+  get_bit x (i mod 64);;
 
 let set_bit_array a i =
-  let index= i lsr 5 in
+  let index= i lsr 6 in
   let x = get_int_array a index in
-  set_int_array a index (set_bit x i)
+  set_int_array a index (set_bit x (i mod 64))
 
 
 let getBloomParams p items =
@@ -35,17 +36,10 @@ let getBloomParams p items =
   (s,h);;
 
 (*
-class bloom_filter (p:float) (n:int) (random:bool) ?meaningful ?total =
-  object(self)
-    val (slots,hashes) = getBloomParams p n
-    val  bloom = Array.create ~len:n
+record bloom_filter (p:float) (n:int) (random:bool) ?meaningful ?total =
     (* Unimplemented Methods*)
-    (* TODO method create
-     * pass randomize parameter*)
     (* TODO method reset
      * Clear whats in the array*)
-    (* TODO method findall
-     * Return a list indicating whether each corresponding item is in the array*)
        (*method add Add value to the bloom filter*)
   end;;
 *)
@@ -76,7 +70,9 @@ let add bf x =
 let create_bloom_filter p n =
 
   let (slots,hash_count) = (getBloomParams p n) in
-  let data = Array.make slots 0 in 
+  let l = int_of_float(
+      ceil((float slots) /. 64.0)) in
+  let data = Array.make l 0 in 
   let hashes = get_hashes hash_count in
   {
     slots;
@@ -87,4 +83,34 @@ let create_bloom_filter p n =
 ;;
 
 
+let read filename=
+  let ic = open_in filename in
+  let slots=input_value  ic  in
+  let hash_count=input_value  ic  in
+  let hashes=get_hashes hash_count in
+  let data = input_value  ic  in
+    close_in ic;
+    {
+      slots;
+      hash_count;
+      data;
+      hashes;
+    }
+    ;;
 
+let write bf filename =
+  let oc = open_out filename in
+  output_value  oc bf.slots;
+  output_value  oc bf.hash_count;
+  output_value  oc bf.data;
+  close_out oc;
+;;
+
+
+let create   ?filename ?prob ?elements () =
+  let bf = match filename,prob,elements with
+    | Some filename,None,None -> read filename 
+    | None,Some prob , Some elements -> create_bloom_filter prob elements 
+    | _,_,_ -> failwith "No information Passed" in
+  bf
+;;
