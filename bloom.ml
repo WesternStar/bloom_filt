@@ -12,16 +12,16 @@ let get_int_array a i =
 
 let set_int_array a i x =
   a.(i mod Array.length a ) <- x;;
-(* We are assuming 64bit *)
+(* We are assuming 63bit *)
 let get_bit_array  a i =
-  let index= i lsr 6 in
+  let index= i / 63 in
   let x = get_int_array a index in
-  get_bit x (i mod 64);;
+  get_bit x (i mod 63);;
 
 let set_bit_array a i =
-  let index= i lsr 6 in
+  let index= i / 63 in
   let x = get_int_array a index in
-  set_int_array a index (set_bit x (i mod 64))
+  set_int_array a index (set_bit x (i mod 63))
 
 
 let getBloomParams p items =
@@ -68,6 +68,7 @@ let add bf x =
   List.iter (set_bit_array bf.data ) a;;
 
 let create_bloom_filter p n =
+  let n= float n in
 
   let (slots,hash_count) = (getBloomParams p n) in
   let l = int_of_float(
