@@ -8,18 +8,18 @@ let set_bit x i =
   x lor mask;;
 
 let get_int_array a i =
-  a.(i mod Array.length a );;
+  a.(i );;
 
 let set_int_array a i x =
-  a.(i mod Array.length a ) <- x;;
+  a.(i ) <- x;;
 (* We are assuming 63bit *)
 let get_bit_array  a i =
-  let index= i / 63 in
+  let index= (i / 63)mod Array.length a in
   let x = get_int_array a index in
   get_bit x (i mod 63);;
 
 let set_bit_array a i =
-  let index= i / 63 in
+  let index= (i / 63)mod Array.length a in
   let x = get_int_array a index in
   set_int_array a index (set_bit x (i mod 63))
 
@@ -72,7 +72,7 @@ let create_bloom_filter p n =
 
   let (slots,hash_count) = (getBloomParams p n) in
   let l = int_of_float(
-      ceil((float slots) /. 64.0)) in
+      ceil((float slots) /. 63.0)) in
   let data = Array.make l 0 in 
   let hashes = get_hashes hash_count in
   {
